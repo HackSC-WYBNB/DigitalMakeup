@@ -3,6 +3,15 @@ from numpy import asarray
 import face_recognition
 import numpy as np
 import PIL
+import blend_modes
+
+def singlePointMakeup(pixel, r, g, b, a):
+    pixelR, pixelG, pixelB, pixelA = pixel
+    newR = pixelR * r / 255
+    newG = pixelG * r / 255
+    newB = pixelB * r / 255
+    newA = pixelA * r / 255
+    return (newR,newG,newB,newA)
 
 def putMakeupOn(faceImage, r, g, b, a):
     """
@@ -11,11 +20,15 @@ def putMakeupOn(faceImage, r, g, b, a):
     """
     # Load the jpg 
     # directory might change
-    image = faceImage
 
     # Find facial features
-    face_features = face_recognition.face_landmarks(image)
-    makeup = Image.fromarray(image)
+    faceImageObj = Image.fromarray(faceImage)
+    faceImageObj = faceImageObj.convert('RGBA')
+    faceImage4L = np.array(faceImageObj)
+
+    face_features = face_recognition.face_landmarks(faceImage)
+    
+    makeup = Image.new('RGBA',faceImageObj.size,(255,255,255,255))
     for ff in face_features:
         d = ImageDraw.Draw(makeup, 'RGBA')
 
@@ -24,8 +37,13 @@ def putMakeupOn(faceImage, r, g, b, a):
         d.line(ff["top_lip"], fill=(r, g, b, a), width=3)
         d.line(ff["bottom_lip"], fill=(r, g, b, a), width=3)
 
-    faceImage = np.array(makeup)
-    return faceImage
+    makeupNP = np.array(makeup)
+    makeupNP_Float = makeupNP.astype(float)
+    faceNP_Float = faceImage4L.astype(float)
+    concatedFaceImageNP_Float = blend_modes.multiply(faceNP_Float,makeupNP_Float,0.7)
+    concatedFaceImageNP = np.uint8(concatedFaceImageNP_Float)
+    
+    return np.array(Image.fromarray(concatedFaceImageNP).convert('RGB'))
 
 """
 def main():
