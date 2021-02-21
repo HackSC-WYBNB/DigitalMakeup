@@ -76,7 +76,7 @@ def makeup_burn(img_in, img_layer, opacity, disable_type_checks: bool = False):
             imageRGB = img_in_norm[x,y,:3]
             hsvMask = colorsys.rgb_to_hsv(maskRGB[0],maskRGB[1],maskRGB[2])
             hsvImage = colorsys.rgb_to_hsv(imageRGB[0],imageRGB[1],imageRGB[2])
-            newPixelHSV = (hsvMask[0],hsvMask[1],hsvImage[2])
+            newPixelHSV = (hsvMask[0],hsvMask[1],(hsvImage[2] * 2.0 + hsvMask[2]) / 3.0)
             newPixel = colorsys.hsv_to_rgb(newPixelHSV[0],newPixelHSV[1],newPixelHSV[2])
             
             comp[x,y,::] = newPixel
@@ -114,7 +114,7 @@ def putMakeupOn(faceImage, r, g, b, a):
     for ff in face_features:
         d = ImageDraw.Draw(makeup, 'RGBA')        
         
-        widthToDraw = 3
+        widthToDraw = 2
         totalColorExisted = 0
         for i in range(1,widthToDraw+1):
             j = widthToDraw - i + 1
